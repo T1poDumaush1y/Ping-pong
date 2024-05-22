@@ -2,17 +2,20 @@ from pygame import *
 
 
 '''Важные переменные'''
-back = (0, 97, 135)
+mixer.init()
+back = 'Pixilart - Sky.jpg'
 win_width = 800
 win_height = 700
 window = display.set_mode((win_width, win_height))
-window.fill(back)
+background = transform.scale(image.load(back), (800, 700))
 
 point1 = 0
 point2 = 0
-leftrocket = 'left_rocket.png'
-rightrocket = 'right_rocket.png'
+leftrocket = 'racket.png'
+rightrocket = 'racket.png'
 scoreline = 'scoreline.png'
+bounce_sound = mixer.Sound('bounce.ogg')
+lose_sound = mixer.Sound('lose.ogg')
 right_will_get_point = False
 left_will_get_point = False
 game = True
@@ -71,9 +74,9 @@ class Scoreline(GameSprite):
             self.speed *= -1
 
 
-left_rocket = Player(leftrocket, 30, 300, 100, 150, 9)
-right_rocket = Player(rightrocket, 670, 300, 100, 150, 9)
-ball = GameSprite('ball.png', 300, 300, 50, 50, 19)
+left_rocket = Player(leftrocket, 50, 300, 90, 200, 9)
+right_rocket = Player(rightrocket, 670, 300, 90, 200, 9)
+ball = GameSprite('pixel tennis ball.png', 300, 300, 70, 70, 19)
 scoreline_obj = Scoreline(scoreline, 300, 25, 200, 35, 3)
 
 
@@ -92,27 +95,29 @@ while game:
             game = False
         
     if finish != True:
-        window.fill(back)
+        window.blit(background, (0, 0))
         left_rocket.update_l()
         right_rocket.update_r()
         scoreline_obj.update_move()
         ball.rect.x += speed_x
         ball.rect.y += speed_y
 
-        points1 = font.render('POINTS: '+ str(point1),  True, (0, 255, 0))
-        window.blit(points1, (150, 10))
+        points1 = font.render('POINTS: '+ str(point1),  True, (255, 255, 255))
+        window.blit(points1, (50, 650))
 
-        points2 = font.render('POINTS: '+ str(point2),  True, (0, 255, 0))
-        window.blit(points2, (550, 10))
+        points2 = font.render('POINTS: '+ str(point2),  True, (255, 255, 255))
+        window.blit(points2, (600, 650))
 
         if sprite.collide_rect(left_rocket, ball):
             speed_x *= -1
             speed_y *= 1
+            bounce_sound.play()
             left_will_get_point == True
 
         if sprite.collide_rect(right_rocket, ball):
             speed_x *= -1
             speed_y *= 1
+            bounce_sound.play()
             right_will_get_point == True
 
         if sprite.collide_rect(scoreline_obj, ball) and right_will_get_point == True:
@@ -133,10 +138,12 @@ while game:
         if ball.rect.x < 0:
             finish = True
             window.blit(lose1, (300, 325))
+            lose_sound.play()
 
-        if ball.rect.x > 700:
+        if ball.rect.x > 725:
             finish = True
             window.blit(lose2, (300, 325))
+            lose_sound.play()
 
     left_rocket.reset()
     right_rocket.reset()
