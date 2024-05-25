@@ -14,8 +14,6 @@ point2 = 0
 leftrocket = 'racket.png'
 rightrocket = 'racket.png'
 scoreline = 'scoreline.png'
-bounce_sound = mixer.Sound('bounce.ogg')
-lose_sound = mixer.Sound('lose.ogg')
 right_will_get_point = False
 left_will_get_point = False
 game = True
@@ -37,7 +35,7 @@ class GameSprite(sprite.Sprite):
         #каждый спрайт должен хранить свойство image - изображение
         self.image = transform.scale(image.load(player_image), (size_x, size_y))
         self.speed = player_speed
-
+        
 
     #каждый спрайт должен хранить свойство rect - прямоугольник, в который он вписан
         self.rect = self.image.get_rect()
@@ -48,6 +46,7 @@ class GameSprite(sprite.Sprite):
 #метод, отрисовывающий героя на окне
     def reset(self):
         window.blit(self.image, (self.rect.x, self.rect.y))
+        
         
 class Player(GameSprite):    
 #метод для управления спрайтом стрелками клавиатуры
@@ -65,25 +64,27 @@ class Player(GameSprite):
         if keys[K_DOWN] and self.rect.y < win_height- 150:
             self.rect.y += self.speed
 
-class Scoreline(GameSprite):
-    def update_move(self):
-        self.rect.x += self.speed
-        if self.rect.x < win_width - 250:
-            self.speed *= -1
-        if self.rect.x > win_width - 750:
-            self.speed *= -1
+class Scr(GameSprite):
+        def update_move(self):
+            self.rect.x += self.speed
+            if self.rect.x < win_width - 250:
+                self.speed *= -1
+            if self.rect.x > win_width - 750:
+                self.speed *= -1
 
 
 left_rocket = Player(leftrocket, 50, 300, 90, 200, 9)
 right_rocket = Player(rightrocket, 670, 300, 90, 200, 9)
 ball = GameSprite('pixel tennis ball.png', 300, 300, 70, 70, 19)
-scoreline_obj = Scoreline(scoreline, 300, 25, 200, 35, 3)
+scoreline_obj = Scr(scoreline, 300, 25, 200, 35, 3)
 
 
 font.init()
 font = font.Font(None, 35)
-lose1 = font.render('PLAYER 1 LOSE!', True, (180, 0, 0))
-lose2 = font.render('PLAYER 2 LOSE!', True, (180, 0, 0))
+lose1 = font.render('PLAYER 1 LOSE!', True, (255, 0, 0))
+lose2 = font.render('PLAYER 2 LOSE!', True, (255, 0, 0))
+win1 = font.render('PLAYER 1 WIN!', True, (0, 255, 0))
+win2 = font.render('PLAYER 2 WIN!', True, (0, 255, 0))
 speed_x = 3
 speed_y = 3
 
@@ -111,39 +112,43 @@ while game:
         if sprite.collide_rect(left_rocket, ball):
             speed_x *= -1
             speed_y *= 1
-            bounce_sound.play()
-            left_will_get_point == True
+            left_will_get_point = True
+            right_will_get_point = False
 
         if sprite.collide_rect(right_rocket, ball):
             speed_x *= -1
             speed_y *= 1
-            bounce_sound.play()
-            right_will_get_point == True
+            right_will_get_point = True
+            left_will_get_point = False
 
-        if sprite.collide_rect(scoreline_obj, ball) and right_will_get_point == True:
-            speed_x *= -1 
-            point2 += 1
-        else:
-            right_will_get_point == False
-
-        if sprite.collide_rect(scoreline_obj, ball) and left_will_get_point == True:
-            speed_x *= -1
-            point1 += 1
-        else:
-            left_will_get_point == False
+        
 
         if ball.rect.y > win_height-50 or ball.rect.y < 0:
             speed_y *= -1
 
+        if sprite.collide_rect(ball, scoreline_obj) and left_will_get_point == True:
+            speed_y *= -1
+            point1 += 1
+
+        if sprite.collide_rect(ball, scoreline_obj) and right_will_get_point == True:
+            speed_y *= -1
+            point2 += 1
+
         if ball.rect.x < 0:
             finish = True
             window.blit(lose1, (300, 325))
-            lose_sound.play()
 
         if ball.rect.x > 725:
             finish = True
             window.blit(lose2, (300, 325))
-            lose_sound.play()
+
+        if point1 == 10:
+            finish = True
+            window.blit(win1, (300, 325))
+
+        if point2 == 10:
+            finish = True
+            window.blit(win2, (300, 325))
 
     left_rocket.reset()
     right_rocket.reset()
